@@ -1,12 +1,18 @@
 package myapps.bouncingballs;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Toast;
 
@@ -14,7 +20,7 @@ import android.widget.Toast;
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
  */
-public class MainDisplayActivity extends AppCompatActivity implements SurfaceHolder.Callback
+public class MainDisplayActivity extends AppCompatActivity implements SurfaceHolder.Callback, SensorEventListener
 {
     /**
      * Whether or not the system UI should be auto-hidden after
@@ -105,7 +111,7 @@ public class MainDisplayActivity extends AppCompatActivity implements SurfaceHol
 
         mVisible = true;
         mControlsView = findViewById(R.id.fullscreen_content_controls);
-        mContentView = findViewById(R.id.fullscreen_content);
+        mContentView = findViewById(R.id.surfaceView);
 
 
         // Set up the user interaction to manually show or hide the system UI.
@@ -133,6 +139,9 @@ public class MainDisplayActivity extends AppCompatActivity implements SurfaceHol
         // created, to briefly hint to the user that UI controls
         // are available.
         delayedHide(100);
+
+        SurfaceView view = (SurfaceView) mContentView;
+        view.getHolder().addCallback(this);
     }
 
     private void toggle()
@@ -187,6 +196,10 @@ public class MainDisplayActivity extends AppCompatActivity implements SurfaceHol
 
     private GraphicsHandler mGraphics;
     private Thread mThread;
+
+    private SensorManager mSensorManager;
+    private Sensor mAccelerometer;
+
     @Override
     public void surfaceCreated(SurfaceHolder holder)
     {
@@ -195,6 +208,13 @@ public class MainDisplayActivity extends AppCompatActivity implements SurfaceHol
                 mGraphics
         );
         mThread.start();
+
+        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        if (mAccelerometer != null)
+        {
+            mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        }
     }
 
     @Override
@@ -208,6 +228,7 @@ public class MainDisplayActivity extends AppCompatActivity implements SurfaceHol
     @Override
     public void surfaceDestroyed(SurfaceHolder holder)
     {
+        mSensorManager.unregisterListener(this);
         mGraphics.stop();
 
         try
@@ -218,5 +239,22 @@ public class MainDisplayActivity extends AppCompatActivity implements SurfaceHol
         {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event)
+    {
+        if (mGraphics != null)
+        {
+            mGraphics.setNewGDirection(-event.values[0], event.values[1]);
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy)
+    {
+        Toast t = Toast.makeText(getApplicationContext(), "Sensor accuracy changed",
+                Toast.LENGTH_SHORT);
+        t.show();
     }
 }

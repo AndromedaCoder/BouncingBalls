@@ -1,8 +1,5 @@
 package myapps.bouncingballs;
 
-/**
- * Created by Chris on 07.05.2017.
- */
 
 class Vector3D
 {
@@ -28,9 +25,22 @@ class Vector3D
     {
         return m_pos[1];
     }
-    double getZ()
+    public double getZ()
     {
         return m_pos[2];
+    }
+
+    void setX(double X)
+    {
+        m_pos[0] = X;
+    }
+    void setY(double Y)
+    {
+        m_pos[1] = Y;
+    }
+    void setZ(double Z)
+    {
+        m_pos[2] = Z;
     }
 
     Vector3D add(Vector3D A)
@@ -38,6 +48,15 @@ class Vector3D
         for(int i = 0; i < 3; ++i)
         {
             m_pos[i] += A.m_pos[i];
+        }
+        return this;
+    }
+
+    Vector3D add(Vector3D A, double Scale)
+    {
+        for(int i = 0; i < 3; ++i)
+        {
+            m_pos[i] += Scale * A.m_pos[i];
         }
         return this;
     }
@@ -56,13 +75,45 @@ class Vector3D
         m_pos[Index] = -m_pos[Index];
     }
 
-    double getNorm()
+    private double getNorm()
     {
         return Math.sqrt(getNormSqr());
     }
 
-    double getNormSqr()
+    void normalize()
+    {
+        double norm = getNorm();
+        for(int i = 0; i < 3; ++i)
+        {
+            m_pos[i] /= norm;
+        }
+    }
+
+    private double getNormSqr()
     {
         return m_pos[0] * m_pos[0] + m_pos[1] * m_pos[1] + m_pos[2] * m_pos[2];
+    }
+
+    double getSqrDistTo(Vector3D Other)
+    {
+        double val = 0.0;
+        for(int i = 0; i < 3; ++i)
+        {
+            val +=  Math.pow(m_pos[i] - Other.m_pos[i], 2);
+        }
+        return val;
+    }
+
+    void scale(double F)
+    {
+        for(int i = 0; i < 3; ++i)
+        {
+            m_pos[i] *= F;
+        }
+    }
+
+    double multiply(Vector3D Other)
+    {
+        return m_pos[0] * Other.m_pos[0] + m_pos[1] * Other.m_pos[1] + m_pos[2] * Other.m_pos[2];
     }
 }
